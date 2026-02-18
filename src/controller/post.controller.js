@@ -2,34 +2,13 @@ const postModel = require("../models/post.model");
 const ImageKit = require("@imagekit/nodejs");
 const { toFile } = require("@imagekit/nodejs");
 const client = new ImageKit();
-const jwt = require("jsonwebtoken");
+
 
 // POST /api/posts/
 async function createPostController(req,res) 
 {
     // console.log(req.file); // file details aali RAM var
     // so aata file server varun RAM var send karun save kru
-
-    const token = req.cookies.token;
-
-    if(!token)
-    {
-        return res.status(401).json({
-            message : "Token not provided, Unauthorized access"
-        })
-    }
-
-    let decoded = null;
-    try
-    {
-        decoded = jwt.verify(token, process.env.JWT_SECRET);
-    }
-    catch(e)
-    {
-        return res.status(401).json({
-            message : "user not authorized"
-        })
-    }
 
     const client = new ImageKit({
         privateKey: process.env.IMAGEKIT_PRIVATE_KEY, // This is the default and can be omitted
@@ -42,13 +21,12 @@ async function createPostController(req,res)
         folder : "cohort-2-insta-clone-posts"
     })
 
-    console.log(file);
-    
+    // console.log(file);
 
     const post = await postModel.create({
         caption : req.body.caption,
         imgUrl : file.url,
-        user : decoded.id
+        user : req.user.id
     })
     
     res.status(201).json({
@@ -57,7 +35,60 @@ async function createPostController(req,res)
     })
 }
 
+
+async function getPostController(req,res) 
+{
+
+    // console.log(decoded); // Ex : { id: '6993086990b3cbc3668caf10', iat: 1771243767, exp: 1771330167 }
+
+    const userId = req.user.id;
+
+    const posts = await postModel.find({
+        user : userId
+    })
+
+    res.status(200).json({
+        message : "Post fetched successfully",
+        posts
+    })
+}
+
+/**
+ *  GET /api/posts/:details [protected]
+ */
+
+async function getPostDetailsController(req,res) 
+{
+    
+
+    const userId = req.user.id;
+    const postId = req.params.postId;
+
+    const post = await postModel.findById(postId);
+
+    if(!post)
+    {
+        return res.status(404).json({
+            message : "Post not found"
+        })
+    }
+
+    const isValidUser = post.user.toString() === userId;
+
+    if(!isValidUser)
+    {
+        return res.status(403).json({
+            message : "Forbidden Content"
+        })
+    }
+
+    return res.status(200).json({
+        message : "Post fetched successfully",
+        post
+    })
+}
+
 module.exports = {
-    createPostController
+    createPostController,getPostController,getPostDetailsController             
 }
 

@@ -30,11 +30,14 @@ async function registerController(req,res)
         password : hash,
     })
 
+    // token creation with signature
     const token = jwt.sign({
-        id : user._id
+        id : user._id,
+        username : user.username
     },process.env.JWT_SECRET, {expiresIn : "1d"})
 
-    res.cookie("token",token);
+    // set token in cookie
+    res.cookie("token",token); 
 
     res.status(201).json({
         message : "User registered successfully",
@@ -66,6 +69,7 @@ async function loginController(req,res)
         })
     }
 
+    // pass decryption means compare
     const isPasswordValid = await bcrypt.compare(password , user.password);
 
     if(!isPasswordValid)
@@ -76,7 +80,8 @@ async function loginController(req,res)
     }
 
     const token = jwt.sign({
-        id : user._id
+        id : user._id,
+        username : user.username
     },process.env.JWT_SECRET,{expiresIn : "1d"});
 
     res.cookie("token",token);

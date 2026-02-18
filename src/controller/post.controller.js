@@ -35,7 +35,7 @@ async function createPostController(req,res)
     })
 }
 
-
+// GET /api/posts/
 async function getPostController(req,res) 
 {
 

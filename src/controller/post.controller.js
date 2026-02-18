@@ -1,8 +1,9 @@
-const postModel = require("../models/post.model");
 const ImageKit = require("@imagekit/nodejs");
 const { toFile } = require("@imagekit/nodejs");
 const client = new ImageKit();
 
+const postModel = require("../models/post.model");
+const likeModel = require("../models/like.model");
 
 // POST /api/posts/
 async function createPostController(req,res) 
@@ -59,8 +60,6 @@ async function getPostController(req,res)
 
 async function getPostDetailsController(req,res) 
 {
-    
-
     const userId = req.user.id;
     const postId = req.params.postId;
 
@@ -88,7 +87,45 @@ async function getPostDetailsController(req,res)
     })
 }
 
+async function likePostController(req,res) 
+{
+    const username = req.user.username;
+    const postId = req.params.postId;
+
+    const post = await postModel.findById(postId);
+
+    if(!post)
+    {
+        res.status(404).json({
+            message : "Post not found"
+        })
+    }
+    
+
+    const alreadyLiked = await likeModel.findOne({
+        post : postId,
+        user : username
+    })
+
+    if(alreadyLiked)
+    {
+        return res.status(400).json({
+            message : "Can not like double"
+        });
+    }
+
+    const like = await likeModel.create({
+        post : postId,
+        user : username
+    })
+
+    res.status(200).json({
+        message : "Post liked successfully",
+        like
+    })
+}
+
 module.exports = {
-    createPostController,getPostController,getPostDetailsController             
+    createPostController,getPostController,getPostDetailsController,likePostController            
 }
 

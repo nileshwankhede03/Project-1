@@ -24,8 +24,13 @@ postRouter.get("/", identifyUser, postController.getPostController);
 
 postRouter.get("/details/:postId", identifyUser, postController.getPostDetailsController);
 
-module.exports = postRouter;
 
+/**
+ * POST /api/posts/like/:postId
+ */
+
+postRouter.post("/like/:postId", identifyUser, postController.likePostController);
+module.exports = postRouter;
 /**
      * .single(fieldname)
   Accept a single file with the name fieldname. The single file will be stored in req.file.

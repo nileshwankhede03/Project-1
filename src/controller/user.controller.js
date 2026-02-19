@@ -80,7 +80,7 @@ async function unfollowUserController(req,res)
 }
 
 /**
- * PUT /api/users/accept
+ * PUT /api/users/accept/username
  */
 async function acceptFollowRequestController(req,res) 
 {
@@ -139,6 +139,9 @@ async function acceptFollowRequestController(req,res)
     });
 }
 
+/**
+ * PUT /api/users/reject/username
+ */
 async function rejectFollowRequestController(req,res) 
 {
     const loggedInUser = req.user.username; // nilesh

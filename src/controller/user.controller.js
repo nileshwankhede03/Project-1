@@ -79,7 +79,129 @@ async function unfollowUserController(req,res)
     })
 }
 
+/**
+ * PUT /api/users/accept
+ */
+async function acceptFollowRequestController(req,res) 
+{
+    const loggedInUser = req.user.username;     // nilesh
+    const requestSender = req.params.username;  // aditi
+
+    // can not change status of yourself
+    if(requestSender === loggedInUser)
+    {
+        return res.status(400).json({
+            message: "Invalid request"
+        });
+    }
+
+    const existingRequest = await followModel.findOne({
+        follower : requestSender,
+        followee : loggedInUser
+    });
+
+    // chk req nasen trr no follow state will performed
+    if(!existingRequest){
+        return res.status(404).json({
+            message : "Request not found"
+        });
+    }
+
+    if(existingRequest.status !== "PENDING"){
+        return res.status(400).json({
+            message : "Request already processed"
+        });
+    }
+
+    const acceptUserRequest = await followModel.findOneAndUpdate(
+        {
+            follower : requestSender,   // aditi (action karnara)
+            followee : loggedInUser,    // nilesh (action received karnara)
+            status : "PENDING"
+        },
+        {
+            $set : {status : "ACCEPTED"}
+        },
+        {
+            new : true
+        }
+    )
+
+    if(!acceptUserRequest){
+        return res.status(404).json({
+            message : "No pending request found"
+        })
+    }
+
+    res.status(200).json({
+        message : `Request accepted of ${requestSender}`,
+        acceptUserRequest
+    });
+}
+
+async function rejectFollowRequestController(req,res) 
+{
+    const loggedInUser = req.user.username; // nilesh
+    const requestSender = req.params.username; // aditi
+
+    if(requestSender === loggedInUser)
+    {
+        return res.status(400).json({
+            message: "Invalid request"
+        });
+    }
+
+    const followData = await followModel.findOne({
+        follower : requestSender,
+        followee : loggedInUser
+    })
+
+    // console.log(followData);
+
+    if(!followData)
+    {
+        return res.status(404).json({
+            message : "Request not found"
+        });
+    }
+
+    if(followData.status != "PENDING")
+    {
+        return res.status(400).json({
+            message : `Cannot reject request with status ${followData.status}`
+        });
+    }
+
+
+    const rejectedUserUpdatedData = await followModel.findOneAndUpdate(
+        {
+            follower : requestSender,   // aditi (action karnara)
+            followee : loggedInUser,    // nilesh (action received karnara)
+            status : "PENDING"
+        },
+        {
+            $set : {status : "REJECTED"}
+        },
+        {
+            new : true
+        }
+    )
+
+    if(!rejectedUserUpdatedData)
+    {
+        return res.status(409).json({
+            message : "Request already processed"
+        });
+    }
+
+    res.status(200).json({
+        message : `${requestSender}'s request is REJECTED by ${loggedInUser}`,
+        rejectedUserUpdatedData
+    })
+}
 module.exports = {
     followUserController,
-    unfollowUserController
+    unfollowUserController,
+    acceptFollowRequestController,
+    rejectFollowRequestController
 }

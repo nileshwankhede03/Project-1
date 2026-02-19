@@ -7,7 +7,8 @@ const userRouter = express.Router();
 userRouter.post("/follow/:username",identifyUser, userController.followUserController)
 userRouter.delete("/unfollow/:username",identifyUser, userController.unfollowUserController)
 
-
+userRouter.put("/accept/:username",identifyUser , userController.acceptFollowRequestController)
+userRouter.put("/reject/:username",identifyUser , userController.rejectFollowRequestController)
 
 
 

@@ -119,7 +119,7 @@ async function getFeedController(req, res) {
   const posts = await postModel.find().populate('user');
 
   res.status(200).json({
-    message: 'posts sent successfully',
+    message: 'posts fetched successfully',
     posts,
   });
 }

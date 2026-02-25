@@ -64,7 +64,7 @@ async function loginController(req, res) {
     .findOne({
       $or: [{ email: email }, { username: username }],
     })
-    .select('+password');
+    .select('+password'); // Query la force kren password read karayla he nasen trr password ha undefined milto and compare nahi hou shakat
 
   // console.log(isUserEmailExists)
   if (!user) {
